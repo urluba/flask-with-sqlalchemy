@@ -11,9 +11,11 @@ flask-migrate = "*"
 flask-script = "*"
 flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
+gunicorn = "*"
 
 [dev-packages]
 python-dotenv = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.6"
