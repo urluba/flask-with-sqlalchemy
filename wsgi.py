@@ -69,3 +69,16 @@ def delete_product(product_id: int):
 
     return '', 204
 
+@app.route('/api/v1/products/<int:product_id>', methods=['PATCH'])
+def update_product(product_id: int):
+    product = db.session.query(Product).get_or_404(product_id) # SQLAlchemy request => 'SELECT * FROM products'
+
+    try:
+        for attr in ['name', 'description']:
+            setattr(product, attr, request.get_json()[attr])
+    except KeyError:
+        pass
+
+    db.session.commit()
+
+    return product_schema.jsonify(product)
