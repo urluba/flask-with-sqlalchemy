@@ -1,6 +1,6 @@
 # wsgi.py
 import logging
-from flask import Flask
+from flask import Flask, request
 from config import Config
 
 
@@ -39,3 +39,23 @@ def product(product_id: int):
         return product_schema.jsonify(product)
 
     return '', 404
+
+@app.route('/api/v1/products/', methods=['POST'])
+def create_product():
+    # product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
+    
+    # if product:
+    #     return product_schema.jsonify(product)
+
+    requested_object = request.get_json()
+    new_object = Product()
+    try:
+        for attr in ['name', 'description']:
+            setattr(new_object, attr, requested_object[attr])
+    except KeyError:
+        return '', 400
+
+    db.session.add(new_object)
+    db.session.commit()
+
+    return product_schema.jsonify(new_object)
