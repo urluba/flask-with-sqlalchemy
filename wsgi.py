@@ -34,4 +34,8 @@ def products():
 @app.route('/api/v1/products/<int:product_id>')
 def product(product_id: int):
     product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
-    return product_schema.jsonify(product)
+    
+    if product:
+        return product_schema.jsonify(product)
+
+    return '', 404
