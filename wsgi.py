@@ -1,6 +1,6 @@
 # wsgi.py
 import logging
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from config import Config
 
 
@@ -25,28 +25,28 @@ from schemas import products_schema, product_schema
 def hello():
     return "Hello World!"
 
+@app.errorhandler(404)
+def page_not_found(e):
+    response = {
+        'url': request.url,
+        'status': 404,
+        'message': 'not found'
+    }
+    return jsonify(response), 404
+
 @app.route('/api/v1/products')
 def products():
     products = db.session.query(Product).all() # SQLAlchemy request => 'SELECT * FROM products'
     return products_schema.jsonify(products)
 
-
-@app.route('/api/v1/products/<int:product_id>')
+@app.route('/api/v1/products/<int:product_id>', methods=['GET'])
 def product(product_id: int):
-    product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
+    product = db.session.query(Product).get_or_404(product_id) # SQLAlchemy request => 'SELECT * FROM products'
     
-    if product:
-        return product_schema.jsonify(product)
-
-    return '', 404
+    return product_schema.jsonify(product)
 
 @app.route('/api/v1/products/', methods=['POST'])
 def create_product():
-    # product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
-    
-    # if product:
-    #     return product_schema.jsonify(product)
-
     requested_object = request.get_json()
     new_object = Product()
     try:
@@ -59,3 +59,13 @@ def create_product():
     db.session.commit()
 
     return product_schema.jsonify(new_object)
+
+@app.route('/api/v1/products/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id: int):
+    product = db.session.query(Product).get_or_404(product_id) # SQLAlchemy request => 'SELECT * FROM products'
+    
+    db.session.delete(product) # SQLAlchemy request => 'SELECT * FROM products'
+    db.session.commit()
+
+    return '', 204
+
