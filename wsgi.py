@@ -19,7 +19,7 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
 from models import Product
-from schemas import products_schema
+from schemas import products_schema, product_schema
 
 @app.route('/')
 def hello():
@@ -29,3 +29,9 @@ def hello():
 def products():
     products = db.session.query(Product).all() # SQLAlchemy request => 'SELECT * FROM products'
     return products_schema.jsonify(products)
+
+
+@app.route('/api/v1/products/<int:product_id>')
+def product(product_id: int):
+    product = db.session.query(Product).get(product_id) # SQLAlchemy request => 'SELECT * FROM products'
+    return product_schema.jsonify(product)
