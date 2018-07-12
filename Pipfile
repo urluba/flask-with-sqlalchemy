@@ -12,6 +12,7 @@ flask-script = "*"
 flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 gunicorn = "*"
+"psycopg2-binary" = "*"
 
 [dev-packages]
 python-dotenv = "*"
