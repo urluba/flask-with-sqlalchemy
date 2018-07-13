@@ -1,6 +1,7 @@
 # wsgi.py
 import logging
 from flask import Flask, request, jsonify
+from flask import render_template, url_for, redirect
 from config import Config
 
 
@@ -21,9 +22,27 @@ ma = Marshmallow(app)
 from models import Product
 from schemas import products_schema, product_schema
 
+@app.route('/products')
+def html_products():
+    return render_template(
+        'products.html',
+        products=db.session.query(Product).all(),
+        product_base_url=url_for('html_products')
+    )
+
+@app.route('/products/<int:product_id>')
+def html_product(product_id: int):
+    return render_template(
+        'product.html',
+        product=db.session.query(Product).get_or_404(product_id),
+        product_base_url=url_for('html_products')
+    )
+
+
 @app.route('/')
-def hello():
-    return "Hello World!"
+def home():
+    return redirect(url_for('html_products'), code=302)
+    
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -45,6 +64,7 @@ def product(product_id: int):
     
     return product_schema.jsonify(product)
 
+@app.route('/api/v1/products', methods=['POST'])
 @app.route('/api/v1/products/', methods=['POST'])
 def create_product():
     requested_object = request.get_json()
