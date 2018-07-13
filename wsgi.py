@@ -1,8 +1,31 @@
 # wsgi.py
 import logging
 from flask import Flask, request, jsonify
-from flask import render_template, url_for, redirect
+from flask import render_template, url_for, redirect, Response
 from config import Config
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+from flask_basicauth import BasicAuth
+
+from werkzeug.exceptions import HTTPException
+
+class AuthException(HTTPException):
+    def __init__(self, message):
+        super().__init__(message, Response(
+            "You could not be authenticated. Please refresh the page.", 401,
+            {'WWW-Authenticate': 'Basic realm="Login Required"'}
+        ))
+
+
+class ModelView(ModelView):
+    def is_accessible(self):
+        if not basic_auth.authenticate():
+            raise AuthException('Not authenticated.')
+        else:
+            return True
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(basic_auth.challenge())
 
 
 try:
@@ -18,9 +41,19 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow # Order is important here!
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+basic_auth = BasicAuth(app)
+
+admin = Admin(
+    app,
+    name='Back-office',
+    template_mode='bootstrap3'
+)
 
 from models import Product
 from schemas import products_schema, product_schema
+
+admin.add_view(ModelView(Product, db.session))
+
 
 @app.route('/products')
 def html_products():

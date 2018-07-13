@@ -13,6 +13,8 @@ flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 gunicorn = "*"
 "psycopg2-binary" = "*"
+flask-admin = "*"
+flask-basicauth = "*"
 
 [dev-packages]
 python-dotenv = "*"
